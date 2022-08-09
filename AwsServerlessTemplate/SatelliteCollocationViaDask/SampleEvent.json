@@ -15,26 +15,26 @@
         "instance_num": 1,
         "gpu_num": 1,
         "source_data": {
-            "bucketname": "kddworkshop",
-            "prefix": "ML_based_Cloud_Retrieval_Use_Case.zip",
-            "filename": "ML_based_Cloud_Retrieval_Use_Case.zip",
+            "bucketname": "ai-4-atmosphere-remote-sensing",
+            "prefix": "CALIPSO-L2-01km-CLayer",
+            "filename": "CALIPSO-L2-01km-CLayer",
             "version": "null"
         },
         "output_result": {
             "bucketname": "aws-sam-cli-managed-default-samclisourcebucket-xscicpwnc0z3",
-            "prefix": "CR_c5d.4xlarge",
+            "prefix": "SC_c5d.4xlarge",
             "filename": "result.txt"
         },
         "output_event": {
             "bucketname": "aws-sam-cli-managed-default-samclisourcebucket-xscicpwnc0z3",
-            "prefix": "CR_c5d.4xlarge",
+            "prefix": "SC_c5d.4xlarge",
             "filename": "event.json"
         },
         "terminate": "",
         "docker_image": "starlyxxx/dask-decision-tree-example",
-        "command_line": "docker run -v /home/ubuntu/ML_based_Cloud_Retrieval_Use_Case:/root/ML_based_Cloud_Retrieval_Use_Case starlyxxx/dask-decision-tree-example:latest sh -c `cd ML_based_Cloud_Retrieval_Use_Case/Code && /usr/bin/python3.6 ml_based_cloud_retrieval_with_data_preprocessing.py`"
+        "command_line": "docker run -v /home/ubuntu/satellite_collocation:/root/satellite_collocation -v /home/ubuntu/data:/root/data starlyxxx/dask-decision-tree-example:latest sh -c `cd satellite_collocation && /usr/bin/python3.6 setup.py install && python3.6 -m pip install s3fs && cd examples/collocate_abi_calipso_local_execution && /usr/bin/python3.6 main.py -md 15 -gr 1 -tp ../../../data/CALIPSO-L2-01km-CLayer/ -sp ../../../data/output_data/`"
     },
     "Commands": {
-        "bash": "wget -P /home/ubuntu/ https://kddworkshop.s3.us-west-2.amazonaws.com/ML_based_Cloud_Retrieval_Use_Case.zip"
+        "bash": "aws s3 cp s3://ai-4-atmosphere-remote-sensing/CALIPSO-L2-01km-CLayer /home/ubuntu/data/ --recursive && aws s3 cp s3://ai-4-atmosphere-remote-sensing/collocation_example_data/goesr_16_static_1km.h5 /home/ubuntu/satellite_collocation/examples/collocate_abi_calipso_local_execution/ --recursive && mkdir /home/ubuntu/data/output_data"
     }
 }

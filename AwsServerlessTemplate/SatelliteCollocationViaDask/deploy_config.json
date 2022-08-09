@@ -1,6 +1,6 @@
 {
     "Transform": "AWS::Serverless-2016-10-31",
-    "Description": "Created by Starly. Cloud Retrieval CloudFromation.",
+    "Description": "Created by Starly. Satellite Collocation CloudFromation.",
     "Parameters": {
         "InstanceType": {
             "Type": "String",
@@ -54,7 +54,7 @@
                     "BlockDeviceMappings": [
                         {
                             "Ebs": {
-                                "VolumeSize": 10,
+                                "VolumeSize": 100,
                                 "VolumeType": "gp2",
                                 "SnapshotId": "snap-0cd181f6e367bfb17",
                                 "DeleteOnTermination": true,
@@ -63,7 +63,7 @@
                             "DeviceName": "/dev/sda1"
                         }
                     ],
-                    "ImageId": "ami-0dd273d94ed0540c0",
+                    "ImageId": "ami-0b152cfd354c4c7a4",
                     "IamInstanceProfile": {
                         "Arn": {
                             "Fn::Join": [
@@ -99,10 +99,7 @@
                         {
                             "Ref": "DLSecurityGroup"
                         }
-                    ],
-                    "UserData": {
-                        "Fn::Base64": "#!/bin/bash\ncurl -fsSL https://get.docker.com -o get-docker.sh\nsudo sh get-docker.sh\nsudo service docker start\nsudo usermod -a -G docker ubuntu\nsudo chmod 666 /var/run/docker.sock\n"
-                    }
+                    ]
                 }
             }
         },
@@ -143,7 +140,7 @@
                     "Ref": "PythonRuntime"
                 },
                 "CodeUri": "lambda/",
-                "Description": "Created by Starly. Cloud Retrieval AWS Lambda function.",
+                "Description": "Created by Starly. Satellite Collocation AWS Lambda function.",
                 "Timeout": 900,
                 "Environment": {
                     "Variables": {
