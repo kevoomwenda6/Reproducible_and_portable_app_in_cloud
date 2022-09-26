@@ -83,7 +83,7 @@ def lambda1_handler(event, context):
         "docker pull "+event['Configurations']['docker_image'],\
         ssm_client)
     send_command_to_master(masterInstanceId,\
-        'curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip awscliv2.zip && sudo ./aws/install && python3.6 -m pip install s3fs',\
+        'curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip awscliv2.zip && sudo ./aws/install',\
         ssm_client)
     send_command_to_master(masterInstanceId,\
         event['Commands']['bash'],\
