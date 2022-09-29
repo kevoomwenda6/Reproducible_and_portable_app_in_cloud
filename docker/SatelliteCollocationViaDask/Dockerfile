@@ -7,7 +7,7 @@ RUN apt-get install -y git wget zip unzip vim curl
 
 RUN pip3 install pandas sklearn numpy h5py
 
-RUN pip3 install datetimerange pyhdf netCDF4
+RUN pip3 install datetimerange pyhdf netCDF4 cftime s3fs
 
 #for dask
 RUN pip3 install dask dask_jobqueue distributed 
