@@ -16,8 +16,8 @@
         "gpu_num": 1,
         "source_data": {
             "bucketname": "ai-4-atmosphere-remote-sensing",
-            "prefix": "starly_test_fixed_OR_ABI-L1b-RadF",
-            "filename": "starly_test_fixed_OR_ABI-L1b-RadF",
+            "prefix": "starly_test_OR_ABI-L1b-RadF",
+            "filename": "starly_test_OR_ABI-L1b-RadF",
             "version": "null"
         },
         "output_result": {
