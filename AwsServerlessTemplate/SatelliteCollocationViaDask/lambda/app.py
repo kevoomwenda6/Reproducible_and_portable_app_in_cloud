@@ -83,13 +83,16 @@ def lambda1_handler(event, context):
         "docker pull "+event['Configurations']['docker_image'],\
         ssm_client)
     send_command_to_master(masterInstanceId,\
+        'curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip awscliv2.zip && sudo ./aws/install',\
+        ssm_client)
+    send_command_to_master(masterInstanceId,\
         event['Commands']['bash'],\
         ssm_client)
 
-    send_command_to_master(masterInstanceId,\
-        "unzip /home/ubuntu/"+event['Configurations']['source_data']["filename"]+" -d /home/ubuntu/",\
-        ssm_client)
-    print('Setup success, start domain adaptation...')
+    # send_command_to_master(masterInstanceId,\
+    #     "unzip /home/ubuntu/"+event['Configurations']['source_data']["filename"]+" -d /home/ubuntu/",\
+    #     ssm_client)
+    print('Setup success, start satellite collocation...')
 
     try:
         if "`" in event['Configurations']['command_line']:
@@ -103,15 +106,12 @@ def lambda1_handler(event, context):
                 ssm_client)
         print('Program success')
     except Exception as e:
-        print('CR went wrong, please check logs.')
+        print('SC went wrong, please check logs.')
         raise e
 
     exe_time = (time.time()-start)/3600
     
     # copy result from VM to S3
-    send_command_to_master(masterInstanceId,\
-    'curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip awscliv2.zip && sudo ./aws/install',\
-    ssm_client)
     send_command_to_master(masterInstanceId,\
         s3_put_object(event['Configurations']['output_result']["filename"],event['Configurations']['output_result']['bucketname']+"/"+event['Configurations']['output_result']['prefix']+"/"+event['Configurations']['output_result']['filename']),\
         ssm_client)

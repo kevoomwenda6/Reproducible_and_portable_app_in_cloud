@@ -15,26 +15,26 @@
         "instance_num": 1,
         "gpu_num": 1,
         "source_data": {
-            "bucketname": "kddworkshop",
-            "prefix": "ML_based_Cloud_Retrieval_Use_Case.zip",
-            "filename": "ML_based_Cloud_Retrieval_Use_Case.zip",
+            "bucketname": "ai-4-atmosphere-remote-sensing",
+            "prefix": "starly_test_OR_ABI-L1b-RadF",
+            "filename": "starly_test_OR_ABI-L1b-RadF",
             "version": "null"
         },
         "output_result": {
             "bucketname": "aws-sam-cli-managed-default-samclisourcebucket-xscicpwnc0z3",
-            "prefix": "CR_c5d.4xlarge",
+            "prefix": "SC_c5d.4xlarge",
             "filename": "result.txt"
         },
         "output_event": {
             "bucketname": "aws-sam-cli-managed-default-samclisourcebucket-xscicpwnc0z3",
-            "prefix": "CR_c5d.4xlarge",
+            "prefix": "SC_c5d.4xlarge",
             "filename": "event.json"
         },
         "terminate": "",
-        "docker_image": "starlyxxx/dask-decision-tree-example",
-        "command_line": "docker run -v /home/ubuntu/ML_based_Cloud_Retrieval_Use_Case:/root/ML_based_Cloud_Retrieval_Use_Case starlyxxx/dask-decision-tree-example:latest sh -c `cd ML_based_Cloud_Retrieval_Use_Case/Code && /usr/bin/python3.6 ml_based_cloud_retrieval_with_data_preprocessing.py`"
+        "docker_image": "starlyxxx/dask-satellite-collocation",
+        "command_line": "docker run -v /home/ubuntu/satellite_collocation:/root/satellite_collocation starlyxxx/dask-satellite-collocation:latest sh -c `cd satellite_collocation/examples/collocate_abi_calipso_local_execution && /usr/bin/python3.8 collocation_dask_local.py -ap ../../taki_data/OR_ABI-L1b-RadF/ -ip ../../taki_data/index-output/ -sp ../../taki_data/abi-output/ -nw 8`"
     },
     "Commands": {
-        "bash": "wget -P /home/ubuntu/ https://kddworkshop.s3.us-west-2.amazonaws.com/ML_based_Cloud_Retrieval_Use_Case.zip"
+        "bash": "git clone https://github.com/AI-4-atmosphere-remote-sensing/satellite_collocation.git /home/ubuntu/satellite_collocation/ && aws s3 cp s3://ai-4-atmosphere-remote-sensing/goesr_16_static/ ./satellite_collocation/examples/collocate_abi_calipso_local_execution/ --recursive && cd satellite_collocation && mkdir taki_data && cp examples/collocate_viirs_calipso_dask_cluster/requirements_dask.txt ./requirements.txt && sudo python3 setup.py install && cd taki_data && mkdir OR_ABI-L1b-RadF && mkdir index-output && mkdir index-finished && mkdir abi-output && aws s3 cp s3://ai-4-atmosphere-remote-sensing/starly_test_index_output/ ./index-output/ --recursive && aws s3 cp s3://ai-4-atmosphere-remote-sensing/starly_test_OR_ABI-L1b-RadF/ ./OR_ABI-L1b-RadF/ --recursive"
     }
 }
