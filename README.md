@@ -1,5 +1,7 @@
 # Reproducible and Portable Big Data Analytics in Cloud
 
+<a href="https://zenodo.org/badge/latestdoi/404854830"><img src="https://zenodo.org/badge/404854830.svg" alt="DOI"></a>
+
 ## Introduction
 We implement the Reproducible and Portable big data Analytics in the Cloud (RPAC) Toolkit, which help us deploy, execute, analyze, and reproduce big data analytics automatically in cloud. 
 
