@@ -1,0 +1,282 @@
+{
+    "Transform": "AWS::Serverless-2016-10-31",
+    "Description": "Created by C4rohan. Cloud Prediction Phase.",
+    "Parameters": {
+        "InstanceType": {
+            "Type": "String",
+            "Default": "p3.8xlarge"
+        },
+        "InstanceNum": {
+            "Type": "Number",
+            "Default": 1
+        },
+        "Ec2KeyName": {
+            "Type": "String",
+            "Default": "Rohan_west"
+        },
+        "Ec2KeyPath": {
+            "Type": "String",
+            "Default": "/Users/rohansalvi/Documents/Reproducible_and_portable_app_in_cloud/ConfigTemplate/Rohan_west.pem"
+        },
+        "SubnetId": {
+            "Type": "String",
+            "Default": "subnet-5e38fc14"
+        },
+        "VpcId": {
+            "Type": "String",
+            "Default": "vpc-81450cf9"
+        },
+        "DLSecurityGroup": {
+            "Type": "String",
+            "Default": "sg-0f81c232cd437d43f"
+        },
+        "IamInstanceName": {
+            "Type": "String",
+            "Default": "EC2SSM"
+        },
+        "SimpleTableName": {
+            "Type": "String",
+            "Default": "samautomation-ResultsDatabase"
+        },
+        "PythonRuntime": {
+            "Type": "String",
+            "Default": "python3.9"
+        }
+    },
+    "Resources": {
+        "AppLaunchTemplate": {
+            "Type": "AWS::EC2::LaunchTemplate",
+            "Properties": {
+                "LaunchTemplateName": {
+                    "Fn::Sub": "${AWS::StackName}-launch-template-for-auto-scaling"
+                },
+                "LaunchTemplateData": {
+                    "BlockDeviceMappings": [
+                        {
+                            "Ebs": {
+                                "VolumeSize": 25,
+                                "VolumeType": "gp3",
+                                "SnapshotId": "snap-05998a2c064630b8e",
+                                "DeleteOnTermination": true,
+                                "Encrypted": false
+                            },
+                            "DeviceName": "/dev/sda1"
+                        }
+                    ],
+                    "ImageId": "ami-0fcf52bcf5db7b003",
+                    "IamInstanceProfile": {
+                        "Arn": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "arn:aws:iam:",
+                                    ":",
+                                    {
+                                        "Ref": "AWS::AccountId"
+                                    },
+                                    ":instance-profile/",
+                                    {
+                                        "Ref": "IamInstanceName"
+                                    }
+                                ]
+                            ]
+                        }
+                    },
+                    "EbsOptimized": true,
+                    "InstanceType": {
+                        "Ref": "InstanceType"
+                    },
+                    "CapacityReservationSpecification": {
+                        "CapacityReservationPreference": "open"
+                    },
+                    "KeyName": {
+                        "Ref": "Ec2KeyName"
+                    },
+                    "Monitoring": {
+                        "Enabled": false
+                    },
+                    "SecurityGroupIds": [
+                        {
+                            "Ref": "DLSecurityGroup"
+                        }
+                    ]
+                   
+                }
+            }
+        },
+        "AppAutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "DesiredCapacity": {
+                    "Ref": "InstanceNum"
+                },
+                "LaunchTemplate": {
+                    "LaunchTemplateId": {
+                        "Ref": "AppLaunchTemplate"
+                    },
+                    "Version": {
+                        "Fn::GetAtt": "AppLaunchTemplate.LatestVersionNumber"
+                    }
+                },
+                "MaxSize": "10",
+                "MinSize": "1",
+                "MetricsCollection" : [ 
+                    {
+                        "Granularity" : "1Minute",
+                        "Metrics" : ["GroupInServiceInstances", "GroupPendingInstances"]
+                    }
+                ],
+                "VPCZoneIdentifier": [
+                    {
+                        "Ref": "SubnetId"
+                    }
+                ]
+            }
+        },
+        "CloudPhasePrediction": {
+            "Type": "AWS::Serverless::Function",
+            "Properties": {
+                "Handler": "app.lambda1_handler",
+                "Runtime": {
+                    "Ref": "PythonRuntime"
+                },
+                "CodeUri": "lambda/",
+                "Description": "Created by C4rohan. AWS Lambda function to get files from s3 to dynamodb for reproducibility",
+                "Timeout": 900,
+                "Environment": {
+                    "Variables": {
+                        "S3_LOGBucketNAME": {
+                            "Ref": "ResultsS3Bucket"
+                        }
+                    }
+                },
+                "Policies": [
+                    {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Effect": "Allow",
+                                "Action": [
+                                    "s3:PutObject",
+                                    "s3:GetObject",
+                                    "s3:ListBucket",
+                                    "s3:ListBucketVersions",
+                                    "s3:GetObjectTagging",
+                                    "s3:GetObjectVersionTagging",
+                                    "s3:GetObjectVersion"
+                                ],
+                                "Resource": "arn:aws:s3:::*"
+                            }
+                        ]
+                    }
+                ],
+                "Events": {
+                    "SelfDefineEvent": {
+                        "Type": "EventBridgeRule",
+                        "Properties": {
+                            "Pattern": {
+                                "source": ["custom.reproduce"]
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "S3ToDynamodb": {
+            "Type": "AWS::Serverless::Function",
+            "Properties": {
+                "Handler": "app.lambda2_handler",
+                "Runtime": {
+                    "Ref": "PythonRuntime"
+                },
+                "CodeUri": "lambda/",
+                "Description": "Created by C4rohan. AWS Lambda function to get files from s3 to dynamodb for reproducibility.",
+                "Timeout": 120,
+                "MemorySize": 512,
+                "Environment": {
+                    "Variables": {
+                        "TABLE_NAME": {
+                            "Ref": "SimpleTableName"
+                        }
+                    }
+                },
+                "Policies": [
+                    {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Effect": "Allow",
+                                "Action": [
+                                    "s3:GetObject",
+                                    "s3:DeleteObject"
+                                ],
+                                "Resource": "arn:aws:s3:::*"
+                            },
+                            {
+                                "Effect": "Allow",
+                                "Action": [
+                                    "dynamodb:GetItem",
+                                    "dynamodb:PutItem",
+                                    "dynamodb:Scan",
+                                    "dynamodb:UpdateItem"
+                                ],
+                                "Resource": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "arn:aws:dynamodb:",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            ":",
+                                            {
+                                                "Ref": "AWS::AccountId"
+                                            },
+                                            ":table/",
+                                            {
+                                                "Ref": "SimpleTableName"
+                                            }
+                                        ]
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "Events": {
+                    "UploadJsonToDynamodb": {
+                        "Type": "S3",
+                        "Properties": {
+                            "Bucket": {
+                                "Ref": "ResultsS3Bucket"
+                            },
+                            "Events": [
+                                "s3:ObjectCreated:*"
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "ResultsS3Bucket": {
+            "Type": "AWS::S3::Bucket"
+        }
+    },
+    "Outputs": {
+        "AutoScalingGroupName": {
+            "Description": "Cloud Phase Prediction AutoScaling Group Name.",
+            "Value": {
+                "Ref": "AppAutoScalingGroup"
+            }
+        },
+        "CloudPhasePrediction": {
+            "Description": "Cloud Phase Prediction Function Arn.",
+            "Value": {
+                "Fn::GetAtt": [
+                    "CloudPhasePrediction",
+                    "Arn"
+                ]
+            }
+        }
+    }
+}
