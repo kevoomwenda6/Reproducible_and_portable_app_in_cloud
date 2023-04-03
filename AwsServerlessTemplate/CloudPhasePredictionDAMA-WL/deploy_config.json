@@ -20,7 +20,7 @@
         },
         "SubnetId": {
             "Type": "String",
-            "Default": "subnet-71dff25a"
+            "Default": "subnet-5e38fc14"
         },
         "VpcId": {
             "Type": "String",
