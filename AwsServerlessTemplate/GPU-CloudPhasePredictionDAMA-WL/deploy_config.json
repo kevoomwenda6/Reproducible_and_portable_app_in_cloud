@@ -28,7 +28,7 @@
         },
         "DLSecurityGroup": {
             "Type": "String",
-            "Default": "sg-0f81c232cd437d43f"
+            "Default": "sg-053abf4cac2d506f4"
         },
         "IamInstanceName": {
             "Type": "String",
@@ -54,7 +54,7 @@
                     "BlockDeviceMappings": [
                         {
                             "Ebs": {
-                                "VolumeSize": 25,
+                                "VolumeSize": 60,
                                 "VolumeType": "gp3",
                                 "SnapshotId": "snap-05998a2c064630b8e",
                                 "DeleteOnTermination": true,
