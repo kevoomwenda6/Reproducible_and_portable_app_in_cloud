@@ -1,5 +1,5 @@
 # Use the latest Ubuntu image
-FROM ubuntu:latest
+FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04
 
 CMD nvidia-smi
 
@@ -8,42 +8,29 @@ RUN apt-get update && \
     apt-get install -y software-properties-common && \
     add-apt-repository universe && \
     apt-get update && \
-    apt-get install unzip && \
     apt-get install -y python3 python3-pip git wget zip unzip vim curl libhdf5-serial-dev && \
     rm -rf /var/lib/apt/lists/*
 
 # Upgrade pip and setuptools
 RUN pip3 install --upgrade pip setuptools wheel
 
-
 # Install any needed packages specified in requirements.txt
-RUN pip3 install numpy 
-RUN pip3 install scikit-learn h5py 
-RUN pip3 install argparse   
+#RUN pip3 install numpy 
+#RUN pip3 install scikit-learn h5py 
+#RUN pip3 install argparse   
 
 
-# Update the package list and install required packages
-RUN apt-get update -y && \
-    apt-get install -y ssh && \
-    apt-get install -y git && \
-    apt-get install -y wget && \
-    apt-get install -y curl && \
-    apt-get install -y libglib2.0-0 && \
-    apt-get install -y libsm6 && \
-    apt-get install -y libxrender1 && \
-    apt-get install -y libxext6 && \
-    apt-get install -y libgl1-mesa-glx && \
-    apt-get install -y libxml2-dev && \
-    apt-get install -y libxslt-dev && \
-    apt-get install -y python3-dev && \
-    apt-get install -y build-essential && \
-    apt-get install -y libhdf5-dev && \
-    apt-get install -y libhdf5-serial-dev && \
-    apt-get install -y libhdf5-103 && \
-    apt-get install -y libpq-dev && \
-    apt-get install -y libssl-dev && \
-    apt-get install -y libffi-dev && \
-    apt-get clean
+RUN wget https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1604/x86_64/libnccl-dev_2.4.7-1+cuda10.1_amd64.deb
+RUN wget https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1604/x86_64/libnccl2_2.4.7-1+cuda10.1_amd64.deb
+RUN dpkg -i libnccl2_2.4.7-1+cuda10.1_amd64.deb
+RUN dpkg -i libnccl-dev_2.4.7-1+cuda10.1_amd64.deb
+RUN cp /usr/local/cuda-10.1/compat/* /usr/local/cuda/lib64/
+
+#RUN wget https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/libnccl-dev_2.8.3-1+cuda11.2_amd64.deb
+#RUN wget https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/libnccl2_2.8.3-1+cuda11.2_amd64.deb
+
+#RUN dpkg -i libnccl-dev_2.8.3-1+cuda11.2_amd64.deb
+#RUN dpkg -i libnccl2_2.8.3-1+cuda11.2_amd64.deb
 
 
 # Install miniconda
@@ -62,6 +49,5 @@ RUN conda create -n cloud-phase-prediction-env -c conda-forge python=3.7 pytorch
 SHELL ["/bin/bash", "-c"]
 RUN echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
     echo "conda activate cloud-phase-prediction-env" >> ~/.bashrc
-
 
 WORKDIR /root/
