@@ -54,16 +54,16 @@
                     "BlockDeviceMappings": [
                         {
                             "Ebs": {
-                                "VolumeSize": 60,
+                                "VolumeSize": 100,
                                 "VolumeType": "gp3",
-                                "SnapshotId": "snap-05998a2c064630b8e",
+                                "SnapshotId": "snap-031c77809966181f4",
                                 "DeleteOnTermination": true,
                                 "Encrypted": false
                             },
                             "DeviceName": "/dev/sda1"
                         }
                     ],
-                    "ImageId": "ami-0fcf52bcf5db7b003",
+                    "ImageId": "ami-019e83314d35611cd",
                     "IamInstanceProfile": {
                         "Arn": {
                             "Fn::Join": [

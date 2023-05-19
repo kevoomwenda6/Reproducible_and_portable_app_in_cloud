@@ -7,6 +7,8 @@ import sys
 import os
 import datetime
 import pprint
+import traceback
+import sys
 
 s3_client = boto3.client('s3')
 s3 = boto3.resource('s3')
@@ -14,8 +16,6 @@ print('Loading function')
 
 def get_ec2_instances_id(region,access_key,secret_key):
     ec2_conn = boto3.resource('ec2',region_name=region,aws_access_key_id=access_key,aws_secret_access_key=secret_key)
-    #global masterInstanceId
-    #masterInstanceId = None 
     print("Instances:",ec2_conn.instances.all())
     if ec2_conn:
         for instance in ec2_conn.instances.all():
@@ -38,9 +38,13 @@ def send_command_to_master(InstanceId,command,ssm_client):
         try:
             waiter.wait(CommandId=command_id,InstanceId=InstanceId)
             break
-        except:
-            print("SSM in progress")
+        except Exception as e:
+            #print("SSM Exception")
+            print("SSM Progress: ", e)
+            #print(traceback.format_exc())
+            #print("Standard error during exception: ", output['StandardErrorContent'])
             time.sleep(5)
+        #print("SSM in progress")
 
     output = ssm_client.get_command_invocation(CommandId=command_id,InstanceId=InstanceId)
     if output['Status'] == 'Success':
@@ -75,10 +79,7 @@ def lambda1_handler(event, context):
     ssm_client = boto3.client('ssm',region_name=credentials[0],aws_access_key_id=credentials[1],aws_secret_access_key=credentials[2])
 
     start = time.time()
-    #Doesnt read this 
-    #send_command_to_master(masterInstanceId,\
-     #   event['Configurations']['terminate'],\
-     #   ssm_client)
+    
     send_command_to_master(masterInstanceId,\
         "curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh",\
         ssm_client)
@@ -89,10 +90,17 @@ def lambda1_handler(event, context):
         "docker pull "+event['Configurations']['docker_image'],\
         ssm_client)
     send_command_to_master(masterInstanceId,\
-        event['Commands']['bash'],\
+        'curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip awscliv2.zip && sudo ./aws/install  ',\
+         ssm_client)
+    send_command_to_master(masterInstanceId,\
+        #event['Commands']['bash'],\
+        'wget -P /home/ubuntu/ "https://ai-4-atmosphere-remote-sensing.s3.amazonaws.com/cloud-phase-prediction-main.zip" && unzip /home/ubuntu/cloud-phase-prediction-main.zip -d /home/ubuntu/ && mkdir -p /home/ubuntu/data/output_data ', \
         ssm_client)
-    print('Setup success, start domain adaptation...')
-
+    print('Setup success, start Cloud Prediction Phase...') 
+    
+    send_command_to_master(masterInstanceId,\
+        "docker run --runtime=nvidia -v /home/ubuntu/cloud-phase-prediction-main:/root/cloud-phase-prediction-main -v /home/ubuntu/output_data:/root/output_data rohansalvi98/cloudpredictionphasegpu:latest sh -c `cd cloud-phase-prediction-main && python3 train.py --training_data_path='./example/training_data/' --model_saving_path='/root/output_data'`", \
+                ssm_client) 
     try:
         if "`" in event['Configurations']['command_line']:
             real_command = event['Configurations']['command_line'].replace("`","'")
@@ -112,21 +120,19 @@ def lambda1_handler(event, context):
     
     # copy result from VM to S3
     send_command_to_master(masterInstanceId,\
-    'curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip awscliv2.zip && sudo ./aws/install',\
-    ssm_client)
-    send_command_to_master(masterInstanceId,\
         s3_put_object(event['Configurations']['output_result']["filename"],event['Configurations']['output_result']['bucketname']+"/"+event['Configurations']['output_result']['prefix']+"/"+event['Configurations']['output_result']['filename']),\
         ssm_client)
     result_version = s3_get_latest_version(event['Configurations']['output_result']["bucketname"],event['Configurations']['output_result']["prefix"]+"/"+event['Configurations']['output_result']['filename'])
 
     # copy event from VM to S3
-    send_command_to_master(masterInstanceId,\
-        "echo "+json.dumps(event).replace('\"','\\"').replace('`','`\'').replace('`\'','\`\'',1)+" | tee -a /home/ubuntu/"+event['Configurations']['output_event']["filename"],\
-        ssm_client)
-    send_command_to_master(masterInstanceId,\
-        s3_put_object(event['Configurations']['output_event']["filename"],event['Configurations']['output_event']['bucketname']+"/"+event['Configurations']['output_event']['prefix']+"/"+event['Configurations']['output_event']['filename']),\
-        ssm_client)
-    event_version = s3_get_latest_version(event['Configurations']['output_event']["bucketname"],event['Configurations']['output_event']["prefix"]+"/"+event['Configurations']['output_event']['filename'])
+    #send_command_to_master(masterInstanceId,\
+    #    "echo prevoius error here "+json.dumps(event).replace('\"','\\"').replace('`','`\'').replace('`\'','\`\'',1)+" | tee -a /home/ubuntu/"+event['Configurations']['output_event']["filename"],\
+    #    ssm_client)
+    
+    #send_command_to_master(masterInstanceId,\
+       #s3_put_object(event['Configurations']['output_event']["filename"],event['Configurations']['output_event']['bucketname']+"/"+event['Configurations']['output_event']['prefix']+"/"+event['Configurations']['output_event']['filename']),\
+       #ssm_client)
+    #event_version = s3_get_latest_version(event['Configurations']['output_event']["bucketname"],event['Configurations']['output_event']["prefix"]+"/"+event['Configurations']['output_event']['filename'])
 
     # caculate cost
     cost = (exe_time*event['Configurations']['bill']['EC2_price']*event['Configurations']['instance_num'])\
@@ -146,8 +152,8 @@ def lambda1_handler(event, context):
         event['Configurations']['source_data']["version"],\
         "s3://"+event['Configurations']['output_result']["bucketname"]+"/"+event['Configurations']['output_result']["prefix"]+"/"+event['Configurations']['output_result']['filename'],\
         str(result_version),\
-        "s3://"+event['Configurations']['output_event']["bucketname"]+"/"+event['Configurations']['output_event']["prefix"]+"/"+event['Configurations']['output_event']['filename'],\
-        str(event_version),\
+        #"s3://"+event['Configurations']['output_event']["bucketname"]+"/"+event['Configurations']['output_event']["prefix"]+"/"+event['Configurations']['output_event']['filename'],\
+        #str(event_version),\
         "s3://"+event['Configurations']['output_event']["bucketname"]+"/"+event['Configurations']['output_event']["prefix"])
     send_command_to_master(masterInstanceId,\
         "echo "+record_json+" | tee -a /home/ubuntu/temp.json",\
@@ -194,13 +200,13 @@ def lambda2_handler(event, context):
         print("Error processing object {} from bucket {}. Event {}".format(key, bucket, json.dumps(event, indent=2)))
         raise e
 
-def generate_record(command_line,Budgetary_cost,Execution_time,Performance_price_ratio,source_data,source_data_verion,program_result,program_result_version,trigger_event,trigger_event_version,reproducibility_folder):
+def generate_record(command_line,Budgetary_cost,Execution_time,Performance_price_ratio,source_data,source_data_verion,program_result,program_result_version,trigger_event): #trigger_event_version,reproducibility_folder add to second last
     record_dict = {'command_line':command_line, \
         'budgetary_cost':Budgetary_cost, 'execution_time':Execution_time, 'performance_price_ratio':Performance_price_ratio, \
         'source_data':source_data, 'source_data_version':source_data_verion, \
         'program_result':program_result, 'program_result_version':program_result_version, \
-        'trigger_event':trigger_event, 'trigger_event_version':trigger_event_version, \
-        'execution_history':reproducibility_folder}
+        'trigger_event':trigger_event, \
+        } #'trigger_event_version':trigger_event_version,\ 'execution_history':reproducibility_folder
     replacetemp = json.dumps(record_dict)
     result = replacetemp.replace('"','\\"')
     try:
