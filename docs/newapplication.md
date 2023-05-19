@@ -26,12 +26,14 @@ Change your configurations in `resource.ini` and `application.ini`.
 
 
 
-
 --> Goto your newly created AwsserverlessTemplate folder
 --> Goto `SampleEvent.json` , Update all the settings here
         1)`instancetype` (Select Instance Type).
+        
         2)`instance_num` (Number of Instances deployed).
+        
         3)`gpu_num` (Number of Gpus Deployed).
+        
         4) Update all the other necessary settings. 
 
 --> Goto `deploy_config.json` Update all the required settings here as well.
