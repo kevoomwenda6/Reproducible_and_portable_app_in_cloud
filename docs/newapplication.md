@@ -14,6 +14,8 @@ Change your configurations in `resource.ini` and `application.ini`.
         
             1. Log into the Docker public registry on your local machine: `docker login -u <Username> -p <Password>`.  
             2. Build the image: `docker build -t <username>/<repository_name>[:tagname] .`. For example: `docker build -t starlyxxx/dask-decision-tree-example:latest .`  
+                If you have a Mac M1/M2 or Higher --> ARM chips use this command instead
+                `docker build --platform linux/amd64 -t <username>/<repository_name>[:tagname] .` 
             3. Push your Docker image to Docker Hub: `docker push <username>/<repository_name>[:tagname]`. For example: `docker push starlyxxx/dask-decision-tree-example:latest`.  
             4. Then put your public docker image name into `application.ini`.  
     - data_address: The **S3 URI** of the data.
