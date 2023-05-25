@@ -1,0 +1,40 @@
+{
+    "Configurations": { 
+         "ec2":{
+            "accessKey": "AKIASHT77BI5WANXXXXX",
+            "secretKey": "ka2WLsmFbrlmLhKNp2dR1fP3v5NcRz5bXXXXXXXX"
+        },
+        "awsRegion": "us-west-2",
+        "ec2KeyPath": "/Users/rohansalvi/Documents/Reproducible_and_portable_app_in_cloud/ConfigTemplate/Rohan_west.pem",
+        "bill":{
+            "instancetype": "p3.8xlarge",
+            "EC2_price": 24.48,
+            "EBS_price": 0.01,
+            "data_size": 0.34
+        },
+        "instance_num": 1,
+        "gpu_num": 1,
+        "source_data": {
+            "bucketname": "ai-4-atmosphere-remote-sensing",
+            "prefix": "cloud-phase-prediction-main.zip",
+            "filename": "cloud-phase-prediction-main.zip",
+            "version": "null"
+        },
+        "output_result": {
+            "bucketname": "portableapp-west",
+            "prefix": "SC_p3.8xlarge",
+            "filename": "result.txt"
+        },
+        "output_event": {
+            "bucketname": "portableapp-west",
+            "prefix": "SC_p3.8xlarge",
+            "filename": "event.json"
+        },
+        "terminate": "",
+        "docker_image": "rohansalvi98/cloudpredictionphasegpu:latest",
+        "command_line": "docker run --runtime=nvidia -v /home/ubuntu/cloud-phase-prediction-main:/root/CloudPhasePrediction -v /home/ubuntu/output_data:/root/output_data rohansalvi98/cloudpredictionphasegpu:latest sh -c `cd CloudPhasePrediction && python3 train.py --training_data_path='./example/training_data/' --model_saving_path='/root/output_data'`"
+    },
+    "Commands": {
+        "bash": "wget -P /home/ubuntu/ https://ai-4-atmosphere-remote-sensing.s3.amazonaws.com/cloud-phase-prediction-main.zip && unzip -x /home/ubuntu/cloud-phase-prediction-main.zip && mkdir -p /home/ubuntu/data/output_data"
+    }
+}

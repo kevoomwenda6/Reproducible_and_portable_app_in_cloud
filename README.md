@@ -1,5 +1,7 @@
 # Reproducible and Portable Big Data Analytics in Cloud
 
+<a href="https://zenodo.org/badge/latestdoi/404854830"><img src="https://zenodo.org/badge/404854830.svg" alt="DOI"></a>
+
 ## Introduction
 We implement the Reproducible and Portable big data Analytics in the Cloud (RPAC) Toolkit, which help us deploy, execute, analyze, and reproduce big data analytics automatically in cloud. 
 
@@ -72,15 +74,14 @@ End-to-end execution also provided in RPAC:
 - [End-to-end: one-click execution with RPAC](./docs/end_to_end.md)
 
 ## Citation
-If you use this code for your research, please cite our [paper](https://arxiv.org/abs/2112.09762):
+If you use this code for your research, please cite our [paper](https://doi.org/10.1109/TCC.2023.3245081):
 
 ```
-@misc{wang2021reproducible,
-      title={Reproducible and Portable Big Data Analytics in the Cloud}, 
-      author={Xin Wang and Pei Guo and Xingyan Li and Jianwu Wang and Aryya Gangopadhyay and Carl E. Busart and Jade Freeman},
-      year={2021},
-      eprint={2112.09762},
-      archivePrefix={arXiv},
-      primaryClass={cs.DC}
+@article{wang2023reproducible,
+  title={Reproducible and Portable Big Data Analytics in the Cloud},
+  author={Wang, Xin and Guo, Pei and Li, Xingyan and Gangopadhyay, Aryya and Busart, Carl and Freeman, Jade and Wang, Jianwu},
+  journal={IEEE Transactions on Cloud Computing},
+  year={2023},
+  publisher={IEEE}
 }
 ```
